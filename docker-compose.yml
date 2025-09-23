@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  client:
+    image: alpine:3
+    command: ["sh", "-c", "sleep infinity"]
+    networks:
+      client_net:
+        ipv4_address: 172.28.1.10
+
+  firewall:
+    build: ./firewall
+    privileged: true
+    cap_add: ["NET_ADMIN", "NET_RAW"]
+    sysctls:
+      net.ipv4.ip_forward: "1"
+      net.ipv4.conf.all.rp_filter: "0"
+    networks:
+      client_net:
+        ipv4_address: 172.28.1.1
+      dmz_net:
+        ipv4_address: 172.28.2.1
+
+  server:
+    image: nginx:stable-alpine
+    networks:
+      dmz_net:
+        ipv4_address: 172.28.2.20
+
+networks:
+  client_net:
+    driver: bridge
+    ipam:
+      config: [{ subnet: 172.28.1.0/24 }]
+  dmz_net:
+    driver: bridge
+    ipam:
+      config: [{ subnet: 172.28.2.0/24 }]
