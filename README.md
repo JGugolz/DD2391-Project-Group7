@@ -5,6 +5,10 @@ Reference,
 Documentation of project,
 Documentation on testing the project
 
+The project consist of a server, client and firewall.
+
+The firewall that we have created should accept or decline packets. The IP adress that is used is 172.28.1.254 and can be pinged by using `ping 172.28.1.254`
+
 ## How to use
 
 To run this lab, you need to have Docker installed. You can install it [here](https://docs.docker.com/engine/install/), or you can install Docker Desktop.
