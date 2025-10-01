@@ -1,12 +1,10 @@
 package main
 
 import (
-	// TODO: Hex?
 	"encoding/hex"
 	"fmt"
 	"log"
 
-	// TODO: Needed?
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
