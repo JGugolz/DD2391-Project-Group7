@@ -5,6 +5,7 @@ go 1.25.1
 require (
 	github.com/florianl/go-nfqueue v1.3.2 // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
+	github.com/google/gopacket v1.1.19
 	github.com/josharian/native v1.0.0 // indirect
 	github.com/mdlayher/netlink v1.6.0 // indirect
 	github.com/mdlayher/socket v0.1.1 // indirect
