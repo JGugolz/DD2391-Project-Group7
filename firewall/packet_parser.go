@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
 	"log"
 
@@ -11,15 +10,16 @@ import (
 
 func parsePacket(b []byte) {
 	var (
-		ipv4 layers.IPv4
-		tcp  layers.TCP
-		udp  layers.UDP
-		icmp layers.ICMPv4
+		ipv4    layers.IPv4
+		tcp     layers.TCP
+		udp     layers.UDP
+		icmp    layers.ICMPv4
+		payload gopacket.Payload
 	)
 
 	parser := gopacket.NewDecodingLayerParser(
 		layers.LayerTypeIPv4,
-		&ipv4, &tcp, &udp, &icmp,
+		&ipv4, &tcp, &udp, &icmp, &payload,
 	)
 	decoded := []gopacket.LayerType{}
 	if err := parser.DecodeLayers(b, &decoded); err != nil {
@@ -43,20 +43,25 @@ func parsePacket(b []byte) {
 			fmt.Printf("UDP %d -> %d len=%d csum=0x%04x\n",
 				udp.SrcPort, udp.DstPort, udp.Length, udp.Checksum)
 
-			if len(udp.Payload) > 0 {
-				fmt.Printf("UDP payload (%d bytes): %s\n",
-					len(udp.Payload), hex.EncodeToString(udp.Payload))
-			}
-
 		case layers.LayerTypeICMPv4:
 			fmt.Printf("ICMPv4 type=%d code=%d checksum=0x%04x\n",
 				icmp.TypeCode.Type(), icmp.TypeCode.Code(), icmp.Checksum)
-			if pl := icmp.Payload; len(pl) > 0 {
-				fmt.Printf("ICMP payload (%d bytes): %s\n",
-					len(pl), hex.EncodeToString(pl))
+
+		case gopacket.LayerTypePayload:
+			const max = 64
+			pl := payload
+			if len(pl) > 0 {
+				show := pl
+				if len(show) > max {
+					show = show[:max]
+				}
+				fmt.Printf("Payload (%d bytes): %x", len(pl), []byte(show))
+				if len(pl) > max {
+					fmt.Print("…")
+				}
+				fmt.Println()
+
 			}
-
 		}
-
 	}
 }

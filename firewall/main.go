@@ -41,6 +41,7 @@ func main() {
 
 		fmt.Printf("[%d]\t%v\n", id, *a.Payload)
 
+		nf.SetVerdict(id, nfqueue.NfAccept)
 		return 0
 	}
 
