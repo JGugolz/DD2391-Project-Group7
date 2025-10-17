@@ -6,3 +6,5 @@ WORKDIR /app
 COPY . .
 RUN go build -o firewall .
 CMD ["./entrypoint.sh"]
+
+EXPOSE 8080
