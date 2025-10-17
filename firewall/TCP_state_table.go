@@ -171,5 +171,81 @@ func (st *StateTable) Decide(
 
 	case StateSynRecv:
 		// Final ACK from origin completes handshake
+		if dirIsOrigin && ack && !syn {
+			e.State = StateEstablished
+			e.LastSeen = now
+			return true, "SYN-RECV->ESTABLISHED", e.State
+		}
+		e.LastSeen = now
+		return true, "SYN_RECV(other)", e.State
+
+	case StateEstablished:
+		if rst {
+			// immediate close
+			delete(st.tab, key)
+			delete(st.tab, rev)
+			return true, "ESTABLISHED->CLOSED(RST)", StateClosed
+		}
+		if fin {
+			if dirIsOrigin {
+				e.State = StateFinWait1
+				e.LastSeen = now
+				return true, "ESTABLISHED->FIN_WAIT1", e.State
+			}
+			e.State = StateCloseWait
+			e.LastSeen = now
+			return true, "ESTABLISHED-CLOSE_WAIT", e.State
+		}
+		e.LastSeen = now
+		return true, "ESTABLISHED(data/ack)", e.State
+
+	case StateFinWait1:
+		if !dirIsOrigin && ack && !fin {
+			e.State = StateFinWait2
+			e.LastSeen = now
+			return true, "FIN_WAIT1->FIN_WAIT2", e.State
+		}
+		if !dirIsOrigin && fin {
+			e.State = StateTimeWait
+			e.LastSeen = now
+			return true, "FIN_WAIT1->TIME_WAIT", e.State
+		}
+		e.LastSeen = now
+		return true, "FIN_WAIT1(other)", e.State
+
+	case StateFinWait2:
+		if !dirIsOrigin && fin {
+			e.State = StateTimeWait
+			e.LastSeen = now
+			return true, "FIN_WAIT2->TIME_WAIT", e.State
+		}
+		e.LastSeen = now
+		return true, "FIN_WAIT2(other)", e.State
+
+	case StateCloseWait:
+		if dirIsOrigin && fin {
+			e.State = StateLastAck
+			e.LastSeen = now
+			return true, "CLOSE_WAIT->LAST_ACK", e.State
+		}
+		e.LastSeen = now
+		return true, "CLOSE_WAIT(other)", e.State
+
+	case StateLastAck:
+		if !dirIsOrigin && ack {
+			delete(st.tab, key)
+			delete(st.tab, rev)
+			return true, "LAST_ACK->CLOSED", StateClosed
+		}
+		e.LastSeen = now
+		return true, "LAST_ACK(other)", e.State
+
+	case StateTimeWait:
+		// allow during TIME_WAIT; GC will remove later
+		e.LastSeen = now
+		return true, "TIME_WAIT", e.State
 	}
+
+	e.LastSeen = now
+	return true, "default", e.State
 }

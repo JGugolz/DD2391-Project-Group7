@@ -65,3 +65,31 @@ func parsePacket(b []byte) {
 		}
 	}
 }
+
+func decodeIPv4TCP(b []byte) (ip *layers.IPv4, tcp *layers.TCP, ok bool) {
+	var (
+		ipv4 layers.IPv4
+		t    layers.TCP
+	)
+	parser := gopacket.NewDecodingLayerParser(
+		layers.LayerTypeIPv4,
+		&ipv4, &t,
+	)
+	var decoded []gopacket.LayerType
+	if err := parser.DecodeLayers(b, &decoded); err != nil {
+		// non-fatal
+	}
+	hasIP, hasTCP := false, false
+	for _, lt := range decoded {
+		if lt == layers.LayerTypeIPv4 {
+			hasIP = true
+		}
+		if lt == layers.LayerTypeTCP {
+			hasTCP = true
+		}
+	}
+	if hasIP && hasTCP {
+		return &ipv4, &t, true
+	}
+	return nil, nil, false
+}
