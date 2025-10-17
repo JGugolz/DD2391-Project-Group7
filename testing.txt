@@ -1,0 +1,14 @@
+Start server with sudo ./start.sh
+
+
+Real time monitoring:
+watch -n 1 'netstat -tun | grep :80'
+
+Verify server is up:
+curl http://[SERVERIP]/
+
+Start basic syn-flood attack:
+sudo hping3 -S --flood -p 80 [SERVERIP]
+
+Test connection to server with:
+curl http://[SERVERIP]/
