@@ -127,11 +127,6 @@ func (c *Config) sendSynPacket(conn net.PacketConn, rng *rand.Rand) error {
 		DstIP:    c.targetIP,
 	}
 
-	// Reasonable SYN options -> 20 bytes total:
-	// MSS(4) + NOP(1) + WS(3) + SACK(2) + NOP(1) + NOP(1) + TS(10) = 22
-	// To reach EXACTLY 20 we’ll pick: MSS(4) + NOP(1) + WS(3) + SACK(2) + NOP(1) + TS(10) = 21 -> still off by 1.
-	// Simpler: MSS(4) + NOP(1) + WS(3) + SACK(2) + TS(10) = 20 ✔
-
 	tsVal := uint32(time.Now().UnixNano() / 1e6) // ms
 	tcpOpts := []layers.TCPOption{
 		{OptionType: layers.TCPOptionKindMSS, OptionLength: 4, OptionData: []byte{0x05, 0xB4}}, // MSS 1460
