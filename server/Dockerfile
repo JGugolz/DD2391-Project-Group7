@@ -8,6 +8,10 @@ WORKDIR /app
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 
+# Copy index.html to the working directory
+COPY index.html /app/index.html
+# COPY vulnerable_server.py /app/vulnerable_server.py
+
 # Expose port 80
 EXPOSE 80
 

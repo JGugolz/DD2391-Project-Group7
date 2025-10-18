@@ -1,0 +1,16 @@
+Real time monitoring:
+docker compose exec -it server ash
+watch -n 1 'netstat -tun | grep :80'
+
+Verify server is up:
+wget -O- http://172.28.2.20/
+
+
+Simulate SYN flood:
+go run main.go -target 172.28.2.20 -port 80 -threads 10 -duration 10
+
+wget -O- http://172.28.2.20/
+no response :/
+
+
+Improvement: Try with client2 - can it reach the server?
