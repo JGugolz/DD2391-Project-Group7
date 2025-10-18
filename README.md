@@ -1,15 +1,16 @@
 # DD2391-Project-Group7
 
-Problem statement,
-Reference,
-Documentation of project,
-Documentation on testing the project
+## Problem Statement
 
-The project consist of a server, client and firewall.
+Networks face various types of attacks including DDoS attacks, such as ACK floods or SYN floods. Filtering these types of attack is crucial when building a firewall. This project implements a lab which consists of a custom firewall, to demonstrate packet interception, parsing it, and filtering for attacks such as SYN floods. The project also includes an attack simulator inside a Docker network to demonstrate and test the firewall.
 
-The firewall that we have created should accept or decline packets. The IP adress that is used is 172.28.1.254 and can be pinged by using `ping 172.28.1.254`
+## Technical Description
 
-## How to use
+The project consist of a server (web server, target), client (attack simulator) and firewall.
+
+The entire project runs inside Docker network where each component has a specific IP addresses within 172.28.x.x. The firewall that we have created should accept or decline packets. The IP adress that is used is 172.28.1.254 and can be pinged by using `ping 172.28.1.254`.
+
+### How to use
 
 To run this lab, you need to have Docker installed. You can install it [here](https://docs.docker.com/engine/install/), or you can install Docker Desktop.
 
@@ -30,3 +31,37 @@ docker compose exec -it client ash
 ```
 
 You know have a shell inside the `client` container. If you try to ping stuff from here, you should see your packets being processed by the firewall in the first terminal.
+
+You can run the SYN flood by running `./client`.
+
+### Firewall Implementation
+
+- Implemented in Go with nfqueue and gopacket library for packet manipulation.
+- Linux netfilter to queue packets before they reach destination
+- Parses IPv4, TCP, UDP and ICMP layers
+
+### Client/Attack Simulator Implementation
+
+- Implemented in Go with gopacket library for creating modified packets
+- Simulates SYN flood DDoS attacks
+
+### Server Implementation
+
+- TBD
+
+## Individual Contributions
+
+### Vilhelm Prytz
+
+### Jack Gugolz
+
+### Tobias Bjurström
+
+### Melissa Arslan
+
+## References
+
+- https://www.cloudflare.com/learning/ddos/what-is-an-ack-flood/
+- https://www.fortinet.com/resources/cyberglossary/what-does-a-firewall-do
+- https://www.radware.com/cyberpedia/application-security/7-most-common-attack-types/
+- https://cheapskatesguide.org/articles/building-my-own-firewall.html

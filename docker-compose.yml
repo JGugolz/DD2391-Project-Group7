@@ -1,13 +1,7 @@
 services:
   client:
-    image: alpine:3
+    build: ./client
     cap_add: ["NET_ADMIN"]
-    command: >
-      sh -c "
-        ip route del default;
-        ip route add default via 172.28.1.254;
-        sleep infinity
-      "
     networks:
       client_net:
         ipv4_address: 172.28.1.10
@@ -26,14 +20,8 @@ services:
         ipv4_address: 172.28.2.254
 
   server:
-    image: nginx:stable-alpine
+    build: ./server
     cap_add: ["NET_ADMIN"]
-    command: >
-      sh -c "
-        ip route del default;
-        ip route add default via 172.28.2.254;
-        nginx -g 'daemon off;'
-      "
     networks:
       dmz_net:
         ipv4_address: 172.28.2.20
