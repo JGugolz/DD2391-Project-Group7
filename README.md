@@ -57,8 +57,6 @@ You can run the SYN flood by running `./client`.
 
 ### Tobias Bjurström
 
-### Melissa Arslan
-
 ## References
 
 - https://www.cloudflare.com/learning/ddos/what-is-an-ack-flood/
