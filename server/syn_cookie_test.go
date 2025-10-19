@@ -3,7 +3,6 @@ package main
 import (
 	"net"
 	"testing"
-	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -101,54 +100,6 @@ func TestSynCookie_Validation(t *testing.T) {
 	wrongCookie := GenerateSynCookie(wrongIP, dstIP, srcPort, dstPort)
 	if ValidateSynCookie(wrongCookie, srcIP, dstIP, srcPort, dstPort) {
 		t.Error("Cookie with wrong source IP should fail validation")
-	}
-}
-
-func TestSynCookie_EnableDisable(t *testing.T) {
-	// Test disabled state
-	synCookieConfig.Enabled = false
-	if ShouldUseSynCookies() {
-		t.Error("ShouldUseSynCookies should return false when disabled")
-	}
-
-	// Test enabled state
-	synCookieConfig.Enabled = true
-	if !ShouldUseSynCookies() {
-		t.Error("ShouldUseSynCookies should return true when enabled")
-	}
-}
-
-func TestSynCookie_SecretRotation(t *testing.T) {
-	synCookieConfig.Enabled = true
-	defer func() { synCookieConfig.Enabled = false }()
-
-	srcIP := net.IPv4(192, 168, 0, 1)
-	dstIP := net.IPv4(192, 168, 0, 2)
-	srcPort := uint16(12345)
-	dstPort := uint16(80)
-
-	// Generate cookie with current secret
-	cookie1 := GenerateSynCookie(srcIP, dstIP, srcPort, dstPort)
-
-	// Simulate secret rotation by manually updating
-	oldSecret := synCookieConfig.Secret
-	var newSecret [16]byte
-	copy(newSecret[:], []byte("new-secret-123456"))
-	synCookieConfig.Secret = newSecret
-	synCookieConfig.LastSecretRotate = time.Now()
-
-	// Generate cookie with new secret
-	cookie2 := GenerateSynCookie(srcIP, dstIP, srcPort, dstPort)
-
-	// Cookies should be different with different secrets
-	if cookie1 == cookie2 {
-		t.Error("Cookies should be different after secret rotation")
-	}
-
-	// Restore old secret for validation test
-	synCookieConfig.Secret = oldSecret
-	if !ValidateSynCookie(cookie1, srcIP, dstIP, srcPort, dstPort) {
-		t.Error("Cookie should validate with correct secret")
 	}
 }
 

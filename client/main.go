@@ -73,7 +73,7 @@ func (c *Config) Start() {
 
 func (c *Config) worker(id int, stopChan chan struct{}) {
 	// open a raw socket
-	conn, err := net.ListenPacket("ip4:tcp", "0.0.0.0")
+	conn, err := net.ListenPacket("ip4:tcp", c.srcIP.String())
 	if err != nil {
 		log.Printf("Thread %d: Failed to open socket: %v", id, err)
 		return

@@ -1,6 +1,6 @@
 FROM golang:1.25-alpine
 
-RUN apk add --no-cache iptables
+RUN apk add --no-cache iptables curl
 
 WORKDIR /app
 COPY . .
