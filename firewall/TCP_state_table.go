@@ -114,13 +114,13 @@ func NewStateTable() *StateTable {
 	st := &StateTable{
 		tab: make(map[FlowKey]*ConnEntry),
 
-		// Timeouts (tweak for your lab scale)
+		// Timeouts
 		synTimeout:         30 * time.Second,
 		establishedTimeout: 5 * time.Minute,
 		finTimeout:         60 * time.Second,
 		timeWaitTimeout:    30 * time.Second,
 
-		// Flood control defaults (tweak for your lab scale)
+		// Flood control defaults
 		synPerIPLimit:       50,
 		synWindow:           1 * time.Second,
 		synBySrc:            make(map[ip4]*windowCounter),

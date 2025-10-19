@@ -44,11 +44,6 @@ func main() {
 		id := *a.PacketID
 		data := *a.Payload
 
-		// (Optional) compact debug:
-		if len(data) >= 10 {
-			log.Printf("NFQ id=%d proto=%d len=%d", id, int(data[9]), len(data))
-		}
-
 		// Human-readable decode (your function)
 		parsePacket(data)
 
