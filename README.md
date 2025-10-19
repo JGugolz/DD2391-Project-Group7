@@ -34,7 +34,16 @@ A simple version of SYN cookies are partially implemented. In a complete impleme
 
 ### Firewall
 
-The firewall contains a TCP state table. A TCP state table is a small in-memory database that tracks TCP flows. The table contains an entry for each TCP flow, where it tracks the state of the connection aswell as a Flow Key (srcIP, dstIP, scrPort, dstPort), Origin, and Timestamp. This allows the firewall to decide which packets belong to legitimate connections and which should be dropped. By keeping track of the source IP, the firewall can determine if the SYN requests per seconds exceeds a set threshold and temporarily ban that source. This protects against a singe-host SYN Flood.
+The firewall contains a TCP state table. A TCP state table is a small in-memory database that tracks TCP flows. The table contains an entry for each TCP flow, where it tracks the state of the connection aswell as a Flow Key (srcIP, dstIP, scrPort, dstPort), Origin, and Timestamp. This allows the firewall to decide which packets belong to legitimate connections and which should be dropped.
+
+The TCP state table has a global limit for how many half-open (SYN_SENT + SYN_RECV) connections request are allowed (globalHalfOpenLimit). After this limit is reached, all new SYN requests are dropped. This protects against a multiple IP SYN flood (by suspending all new connections).
+
+The TCP state table also has a by-IP limit for how many half-open connections requests are allowed. After this limit is reached, the IP address is blocked from making new SYN request for a set time. This protects agains a single IP SYN flood (by blocking the potentially malicious IP, while still allowing other IP-addresses to make new connections).
+
+The firewall contains a TCP state table monitor which allows us to see the contents of the TCP state table in two minute intervalls, aswell as banned IP addresses.
+
+The firewall also contains a TCP validity check. This check filters out invalid TCP flag combonations which should never appear in a legitimate TCP packet. The check also filters out packets with invalid TCP header lengths.
+
 
 ### How to use
 
@@ -193,25 +202,28 @@ Run test for SYN-cookies outside the docker environment by navigating to the ser
 - README and documentation
   - Structure of README and initial documentation. We finalized the entire README together.
 - Implement SYN flood client that sends SYN floods to specific IP and port based on input
-  - I wrote a client that emulates a SYN flood attack using Go, gopacket
+  - I wrote a client that emulates a SYN flood attack using Go, gopacket.
 
 ### Jack Gugolz
 
 - Packer parser
-  - Bla
-- TCP State table
-  - bla
+  - I used the Google-made package gopacket to make a packet parser. The packet parser allows us to log the packet type and corresponding flags, aswell as it's payload in the firewall.
+- TCP State Table
+  - I learnt what a TCP state table is, and how it can be used to protect against SYN floods.
+  - I created the TCP state table, and implemented it in firewall.
+- SYN Flood
+  - I fixed the TCP headers in the TCP flood to make sure is was not filtered out by the state table.
 
 ### Tobias Bjurström
 
 - Mynfqueue
-  - Extension of nfqueue mainly used for debugging
-  - Implements a user-level queue in order to simplify logging the queue
+  - Extension of nfqueue mainly used for debugging.
+  - Implements a user-level queue in order to simplify logging the queue.
 - SYN-cookies
-  - Implementation of the SYN-cookies
-  - Built tests for verifying the functionality of the implementation
+  - Implementation of the SYN-cookies.
+  - Built tests for verifying the functionality of the implementation.
 - Web server
-  - Starts a vulnerable server capable of serving requests but not inherently resistant to SYN-floods
+  - Starts a vulnerable server capable of serving requests but not inherently resistant to SYN-floods.
 
 ## References
 

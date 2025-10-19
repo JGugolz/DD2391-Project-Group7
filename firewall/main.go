@@ -52,7 +52,7 @@ func main() {
 		// Stronger TCP path
 		if ip, tcp, plen, ok := decodeIPv4TCPWithPayload(data); ok {
 			// 0) Drop obviously bad flag combos (stealth scans)
-			if invalidTcpFlags(tcp) {
+			if invalidTcpPacket(tcp) {
 				log.Printf("DROP invalid-flags %s:%d -> %s:%d", ip.SrcIP, tcp.SrcPort, ip.DstIP, tcp.DstPort)
 				verdict = nfqueue.NfDrop
 				_ = nf.SetVerdict(id, verdict)
@@ -61,7 +61,7 @@ func main() {
 
 			src := ip4From(b4(ip.SrcIP))
 
-			// 1) Temporary shun?
+			// 1) Temporary shun
 			tcpTable.mu.Lock()
 			banned := tcpTable.isBanned(src)
 			tcpTable.mu.Unlock()

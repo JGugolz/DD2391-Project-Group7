@@ -64,34 +64,6 @@ func parsePacket(b []byte) {
 	}
 }
 
-func decodeIPv4TCP(b []byte) (ip *layers.IPv4, tcp *layers.TCP, ok bool) {
-	var (
-		ipv4 layers.IPv4
-		t    layers.TCP
-	)
-	parser := gopacket.NewDecodingLayerParser(
-		layers.LayerTypeIPv4,
-		&ipv4, &t,
-	)
-	var decoded []gopacket.LayerType
-	if err := parser.DecodeLayers(b, &decoded); err != nil {
-		// non-fatal
-	}
-	hasIP, hasTCP := false, false
-	for _, lt := range decoded {
-		if lt == layers.LayerTypeIPv4 {
-			hasIP = true
-		}
-		if lt == layers.LayerTypeTCP {
-			hasTCP = true
-		}
-	}
-	if hasIP && hasTCP {
-		return &ipv4, &t, true
-	}
-	return nil, nil, false
-}
-
 func decodeIPv4TCPWithPayload(b []byte) (ip *layers.IPv4, tcp *layers.TCP, payloadLen int, ok bool) {
 	var (
 		ipv4 layers.IPv4
@@ -117,17 +89,4 @@ func decodeIPv4TCPWithPayload(b []byte) (ip *layers.IPv4, tcp *layers.TCP, paylo
 		return &ipv4, &t, payloadLen, true
 	}
 	return nil, nil, 0, false
-}
-
-func decodeIPv4(b []byte) (*layers.IPv4, bool) {
-	var ip layers.IPv4
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeIPv4, &ip)
-	var decoded []gopacket.LayerType
-	_ = parser.DecodeLayers(b, &decoded)
-	for _, lt := range decoded {
-		if lt == layers.LayerTypeIPv4 {
-			return &ip, true
-		}
-	}
-	return nil, false
 }

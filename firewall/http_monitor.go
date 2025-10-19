@@ -8,7 +8,7 @@ import (
 )
 
 // startHTTP starts a lightweight HTTP server that exposes the TCP state table
-// both as JSON (/dump) and as a simple auto-refreshing HTML page (/).
+// both as JSON (/dump) and as a simple auto-refreshing HTML page (/)
 func startHTTP() {
 	http.HandleFunc("/dump", func(w http.ResponseWriter, r *http.Request) {
 		snap := tcpTable.Snapshot()
