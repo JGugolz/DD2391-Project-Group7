@@ -17,7 +17,6 @@ import (
 The variable Enabled in synCookieConfig is used to enable/disable the syn-cookie functionalities in main.go
 
 Simple syn-cookie consists of setting the sequence number to a hashed value consisting of IPs and Ports
-(See example from wikipedia, without  t and m)
 */
 
 // SYN Cookie configuration
@@ -119,7 +118,8 @@ func ModifyTCPSequenceNumber(data []byte, newSeq uint32) ([]byte, error) {
 
 // Validate SYN cookie
 func ValidateSynCookie(cookie uint32, srcIP, dstIP net.IP, srcPort, dstPort uint16) bool {
-	expected := GenerateSynCookie(dstIP, srcIP, dstPort, srcPort)
+	//expected := GenerateSynCookie(dstIP, srcIP, dstPort, srcPort)
+	expected := GenerateSynCookie(srcIP, dstIP, srcPort, dstPort)
 	log.Printf("SYN-COOKIE: Expected %d, Sent %d", expected, cookie)
 	isValid := cookie == expected
 	if isValid {
@@ -136,4 +136,51 @@ func ShouldUseSynCookies() bool {
 		return false
 	}
 	return true
+}
+
+func decodeIPv4TCPWithFullPayload(b []byte) (ip *layers.IPv4, tcp *layers.TCP, payload gopacket.Payload, ok bool) {
+	var (
+		ipv4 layers.IPv4
+		t    layers.TCP
+		pl   gopacket.Payload
+	)
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeIPv4, &ipv4, &t, &pl)
+	var decoded []gopacket.LayerType
+	_ = parser.DecodeLayers(b, &decoded)
+	hasIP, hasTCP := false, false
+	for _, lt := range decoded {
+		if lt == layers.LayerTypeIPv4 {
+			hasIP = true
+		}
+		if lt == layers.LayerTypeTCP {
+			hasTCP = true
+		}
+	}
+	if hasIP && hasTCP {
+		return &ipv4, &t, pl, true
+	}
+	return nil, nil, nil, false
+}
+
+// Example usage in main function
+func main() {
+	// Enable SYN cookies
+	synCookieConfig.Enabled = true
+
+	// Example: Generate a cookie for a connection
+	srcIP := net.IPv4(192, 168, 1, 100)
+	dstIP := net.IPv4(192, 168, 1, 1)
+	srcPort := uint16(54321)
+	dstPort := uint16(80)
+
+	cookie := GenerateSynCookie(srcIP, dstIP, srcPort, dstPort)
+	log.Printf("Generated SYN cookie: %d", cookie)
+
+	// Example: Validate the cookie
+	isValid := ValidateSynCookie(cookie, srcIP, dstIP, srcPort, dstPort)
+	log.Printf("Cookie validation result: %t", isValid)
+
+	// Test with invalid cookie
+	invalidResult := ValidateSynCookie(123456, srcIP, dstIP, srcPort, dstPort)
+	log.Printf("Invalid cookie validation result: %t", invalidResult)
 }
