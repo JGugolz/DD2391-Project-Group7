@@ -14,3 +14,20 @@ no response :/
 
 
 Improvement: Try with client2 - can it reach the server?
+
+
+SYN - Cookies
+docker compose exec -it server ash
+
+Enable SYN-cookies
+sysctl net.ipv4.tcp_syncookies
+sysctl -w net.ipv4.tcp_syncookies=1
+sysctl net.ipv4.tcp_syncookies
+
+Reduce backlog to make cookies kick in sooner
+sysctl -w net.ipv4.tcp_max_syn_backlog=2
+
+Monitor:
+watch -n 1 'ss -t -a | grep -c SYN-RECV'
+
+watch -n 1 'netstat -t'
