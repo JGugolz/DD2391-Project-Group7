@@ -20,7 +20,7 @@ The client runs inside a Docker container. It is a Go executable that is meant t
 - `target`: target IP address, by default this is `172.28.2.20` which is the IP of the server container inside the Docker Network
 - `threads`: number of concurrent threads to run the attack with
 
-Tehnically, this is implemented in Go and works by using raw sockets to send malicious packets. It has three modes:
+Technically, this is implemented in Go and works by using raw sockets to send malicious packets. It has three modes:
 
 - Standard: Sends high volume SYN floods with random source ports. It ignores the SYN ACK we get from the server, exhausting connection queues.
 - Malformed Offset: Sends packets with malformed TCP header offset field.
@@ -43,7 +43,6 @@ The TCP state table also has a by-IP limit for how many half-open connections re
 The firewall contains a TCP state table monitor which allows us to see the contents of the TCP state table in two minute intervalls, aswell as banned IP addresses.
 
 The firewall also contains a TCP validity check. This check filters out invalid TCP flag combonations which should never appear in a legitimate TCP packet. The check also filters out packets with invalid TCP header lengths.
-
 
 ### How to use
 
