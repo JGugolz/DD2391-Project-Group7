@@ -50,7 +50,7 @@ func (s TCPState) String() string {
 
 // - FLOW KEYS, ENTRIES, AND THE STATE TABLE -
 
-// FlowKey is a directional 5-tuple key (src→dst) for TCP flows
+// FlowKey is a directional 4-tuple key (src→dst) for TCP flows
 type FlowKey struct {
 	SrcIP   [4]byte
 	DstIP   [4]byte
