@@ -26,7 +26,7 @@ func main() {
 	src := flag.String("src", "172.28.1.10", "Source IP address")
 	target := flag.String("target", "172.28.2.20", "Target IP address")
 	port := flag.Int("port", 80, "Target port")
-	threads := flag.Int("threads", 10, "Number of concurrent threads")
+	threads := flag.Int("threads", 20, "Number of concurrent threads")
 	duration := flag.Int("duration", 10, "Duration in seconds")
 	flag.Parse()
 

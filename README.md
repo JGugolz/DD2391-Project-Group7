@@ -88,7 +88,7 @@ round-trip min/avg/max = 0.700/1.005/1.265 ms
 You can run the SYN flood by running `./client`.
 
 ```
-/app # ./client
+/app # ./client -threads 10
 Starting SYN flood attack:
   Target: 172.28.2.20:80
   Threads: 10
